@@ -1,0 +1,14 @@
+stateDiagram-v2
+    [*] --> spec
+    spec --> red: Prometeo approves plan, Pythia writes spec
+    red --> build: Themis writes failing tests (RED saved as file)
+    build --> prove: Hefesto implements; verify.sh green
+    prove --> review: Alétheia assembles before/after + assertions.md
+    review --> build: score < 5 (pending list = next spec)
+    review --> merge_pending: score = 5/5, zero unresolved
+    merge_pending --> [*]: Zeus merges
+    note right of review
+        Minos = PR-Agent + deepseek-flash
+        max iterations N (default 4)
+        every round logged in Ariadna
+    end note

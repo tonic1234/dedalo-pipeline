@@ -1,0 +1,9 @@
+flowchart LR
+    P[Prometeo] -->|plan| S[Pythia]
+    S -->|spec.md| T[Themis]
+    T -->|"RED + raw failure output"| H[Hefesto]
+    H -->|"code + verify.sh green"| A[Alétheia]
+    A -->|"before/after + assertions.md"| G[Argos]
+    G -->|"gate pass + PR"| M[Minos]
+    M -->|"score 5/5 + PR URL"| Z[Zeus]
+    M -->|"score < 5 + findings (file:line)"| H

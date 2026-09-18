@@ -1,0 +1,102 @@
+version: 0.9.0
+name: dedalo
+description: "AI software factory pipeline: isolate -> build -> prove -> review with external scorer loop. Greek-mythology entities."
+
+entities:
+  - id: dedalo
+    myth: "Daedalus — master craftsman of Crete"
+    role: "The pipeline itself"
+    kind: system
+    llm: false
+  - id: prometeo
+    myth: "Prometheus — the Forethinker"
+    role: "Planner: unit breakdown, effort, budget estimate"
+    kind: stage
+    llm: true
+    model: deepseek-flash
+    reasoning: max
+    artifact: plan.md
+  - id: pythia
+    myth: "The Oracle of Delphi"
+    role: "Spec writer: complete prose spec, point by point"
+    kind: stage
+    llm: true
+    model: deepseek-flash
+    reasoning: high
+    artifact: spec.md
+  - id: themis
+    myth: "Goddess of divine law"
+    role: "Test writer: failing tests (RED) saved as file"
+    kind: stage
+    llm: true
+    model: deepseek-flash
+    reasoning: high
+    artifact: "tests + raw failure output"
+  - id: hefesto
+    myth: "Hephaestus — blacksmith of the gods"
+    role: "Builders: implement in isolated worktrees, N in parallel"
+    kind: stage
+    llm: true
+    model: deepseek-flash
+    reasoning: high
+    parallelism: true
+    artifact: "code in agent/<unit> branch, tests green"
+  - id: aletheia
+    myth: "Goddess of revealed truth"
+    role: "Prover: before/after evidence, assertions.md"
+    kind: stage
+    llm: false
+    artifact: "before/after pair + assertions.md"
+  - id: argos
+    myth: "Argus Panoptes — the hundred-eyed guardian"
+    role: "Preflight gate: plan, tests, docs, git hygiene"
+    kind: gate
+    llm: false
+  - id: minos
+    myth: "Judge of the dead"
+    role: "Inspector: external review, score 0-5, requeue loop"
+    kind: stage
+    llm: true
+    model: deepseek-flash
+    engine: "PR-Agent (The-PR-Agent/pr-agent, MIT)"
+    max_iterations: 4
+    artifact: "score + findings (file:line)"
+  - id: cerbero
+    myth: "Cerberus — three-headed watchdog of Hades"
+    role: "Watchdog: alerts on stall/cut (Telegram)"
+    kind: tooling
+    llm: false
+  - id: ariadna
+    myth: "Ariadne — the thread through the Labyrinth"
+    role: "Ledger: evidence trail, lessons, resumable state"
+    kind: tooling
+    llm: false
+  - id: plutus
+    myth: "God of wealth"
+    role: "Budget: caps per run, 80% warn, 100% cut"
+    kind: tooling
+    llm: false
+  - id: zeus
+    myth: "King of Olympus"
+    role: "Human operator: the only one allowed to merge"
+    kind: human
+
+rules:
+  - "No one writes to main: worktree + agent/<unit> branch per unit"
+  - "Tests before code; RED saved as raw output file"
+  - "The spec wins over tests (test fixed with explicit OK + reason)"
+  - "Evidence, not intention: artifacts validated by the receiving stage"
+  - "No paid models without human OK; budgets are caps"
+  - "Additive changes only; previous version stays alive until pilot passes"
+  - "Resumable + watched: state on disk, watchdog alerts"
+
+models:
+  default: deepseek-flash
+  pricing_offpeak_per_1M: {input_cache_hit: 0.003, input_cache_miss: 0.15, output: 0.60}
+  pricing_peak_per_1M: {input_cache_hit: 0.006, input_cache_miss: 0.30, output: 1.20}
+  retired:
+    - deepseek-v4-pro
+  aliases_to_flash:
+    - deepseek-v4-flash
+    - deepseek-v4-flash-vision-exp
+  future: {v41_pro: "candidate for prometeo when launched"}

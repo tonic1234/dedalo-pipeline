@@ -1,0 +1,19 @@
+flowchart LR
+    Z[("Zeus — human / merge only")]
+    PRO["Prometeo — PLANNER<br/>deepseek-flash, reasoning_effort=max"]
+    PYT["Pythia — SPEC"]
+    THE["Themis — TESTS (RED)"]
+    HEF["Hefesto — BUILDERS ×N<br/>deepseek-flash, worktrees"]
+    ALE["Alétheia — PROVE<br/>before/after evidence"]
+    ARG["Argos — PREFLIGHT GATE"]
+    MIN["Minos — INSPECTOR<br/>PR-Agent + score 0-5"]
+    ARI["Ariadna — THREAD<br/>evidence, lessons, state"]
+    PLU["Plutus — BUDGET"]
+    CER["Cerbero — WATCHDOG"]
+
+    Z --> PRO --> PYT --> THE --> HEF --> ALE --> ARG --> MIN
+    MIN -->|"score < 5 → pending list"| HEF
+    MIN -->|"score = 5/5, zero unresolved"| Z
+    ARI -. "tracks every handoff" .-> PRO & PYT & THE & HEF & ALE & MIN
+    PLU -. "caps every LLM call" .-> PRO & PYT & THE & HEF & MIN
+    CER -. "alerts on stall/cut" .-> Z
