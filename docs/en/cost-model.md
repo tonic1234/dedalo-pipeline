@@ -32,7 +32,7 @@ per 1M tokens.
 
 | Entity | Role | Model | Reasoning mode |
 |---|---|---|---|
-| Prometeo | Planner | `anthropic/claude-opus-5` (OpenRouter) | premium; fallback: flash `max` |
+| Prometeo | Planner | `deepseek-flash` | `thinking` + `reasoning_effort=max` |
 | Pythia | Spec | `deepseek-flash` | `thinking` enabled, `high` |
 | Themis | Tests | `deepseek-flash` | `high` |
 | Hefesto | Builders (×N) | `deepseek-flash` | `high` |
@@ -40,45 +40,42 @@ per 1M tokens.
 | Alétheia / Argos / Cerbero / Plutus / Ariadna | Tooling | — (no LLM) | — |
 
 **Total LLM roles: exactly 5** (plan, spec, tests, build×N, inspect). Everything else is deterministic
-tooling that cannot be fooled. Only **Prometeo** runs a premium model, one call per unit.
+tooling that cannot be fooled.
 
-## The premium planner — decision (2026-09-18, operator-approved)
+## The planner model — current decision and the planned experiment
 
-The idea: a **much better model only for planning**, `deepseek-flash` on the workers, and clear
-instructions from the planner so the workers don't reinterpret.
-
-**Decision**: Prometeo runs **`anthropic/claude-opus-5`** (Anthropic) **via OpenRouter**.
+Decision (18-sep-2026): **Prometeo plans with `deepseek-flash` + `thinking` + `reasoning_effort=max`**
+for now. The premium option was evaluated and kept as a *measured experiment*:
 
 | Aspect | Value (checked 2026-09-18) |
 |---|---|
-| Model | `anthropic/claude-opus-5` (1M context) |
-| Route | **OpenRouter** (key `OPENROUTER_API_KEY` already exists) — direct Anthropic is the same list price and needs a new key/account; both are valid, OpenRouter is the zero-friction default |
+| Candidate | `anthropic/claude-opus-5` (1M context), via OpenRouter (key `OPENROUTER_API_KEY` already exists; direct Anthropic is the same list price and needs a new key/account) |
 | Price (OpenRouter) | $5.00 / 1M input · $25.00 / 1M output · `:batch` variant at half ($2.50 / $12.50) |
-| Cost per plan (est. 10k in / 2k out) | ≈ $0.05 + $0.05 = **≈ $0.10** (≈ $0.05 with `:batch`) |
-| Daily impact (5–10 units/day) | **+$0.50 – $1.00** over an all-flash pipeline |
+| Cost per plan if adopted (est. 10k in / 2k out) | ≈ $0.10 (≈ $0.05 with `:batch`) — impact ≈ +$0.50–1.00/day |
 
-Why this is safe:
-- Prometeo is **one call per unit** — the premium cost does not multiply across iterations (the review
-  loop only re-runs Hefesto + Minos, both flash).
-- The plan is **executable instructions** for the flash workers (domain breakdown, acceptance criteria,
-  exact files, forbidden behaviors), so the premium pays once and the cheap workers execute.
-- Fallback: `deepseek-flash` with `reasoning_effort=max` if the OpenRouter route is down or the budget
-  is exceeded; the pipeline degrades, never stops.
-- If/when **DeepSeek V4.1-Pro** ships, re-evaluate it for the same role as a cheaper in-provider option.
+Why DeepSeek first: no premium model is *required* for the pipeline to work — flash with max reasoning
+is the measured baseline; the premium only makes sense if it measurably reduces rework downstream.
+
+**A/B protocol (when run)**: the same 3 units are planned by both models (flash-max vs opus-5). Compare
+per unit: spec completeness, first-pass inspector score, rounds to 5/5, rework tokens. Cost of the
+experiment: 3 units × ≈$0.10 = ≈$0.30. The result decides the default; the pipeline never blocks on it.
+Re-evaluate **DeepSeek V4.1-Pro** as a cheaper in-provider premium when it ships.
 
 ## Estimated cost per unit (off-peak, cache-assisted)
 
 | Role | Tokens in (est.) | Tokens out (est.) | Cost (est.) |
 |---|---|---|---|
-| Prometeo (plan, Opus 5) | 10k | 2k | ≈ $0.10 |
+| Prometeo (plan, flash max) | 10k | 2k | ≈ $0.003 |
 | Pythia (spec) | 8k | 1.5k | ≈ $0.002 |
 | Themis (tests) | 10k | 1.5k | ≈ $0.002 |
 | Hefesto (build, 1 iteration) | 40k | 8k | ≈ $0.011 |
 | Minos (inspect, 1 round) | 50k | 4k | ≈ $0.010 |
-| **Unit total, 1 build + 2 review rounds** | — | — | **≈ $0.14–0.16** (~$0.09–0.11 with Opus `:batch`) |
+| **Unit total, 1 build + 2 review rounds** | — | — | **≈ $0.04–0.06** |
+
+*If the Prometeo A/B experiment adopts `claude-opus-5`, add ≈ $0.10 per unit (≈ $0.05 with `:batch`).*
 
 A full working day (10–20 units, 10–40k tokens per call, off-peak, cache-assisted):
-**≈ $1.00–2.50** — the all-flash day was ~$0.50–1.50; the premium planner adds the Opus cost above.
+**≈ $0.50–1.50**.
 
 ## Budget mechanics (Plutus)
 

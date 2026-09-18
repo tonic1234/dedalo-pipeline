@@ -32,7 +32,7 @@ Todos los precios son por 1M de tokens.
 
 | Entidad | Rol | Modelo | Modo de razonamiento |
 |---|---|---|---|
-| Prometeo | Planificador | `anthropic/claude-opus-5` (OpenRouter) | premium; fallback: flash `max` |
+| Prometeo | Planificador | `deepseek-flash` | `thinking` + `reasoning_effort=max` |
 | Pythia | Spec | `deepseek-flash` | `thinking` activado, `high` |
 | Themis | Tests | `deepseek-flash` | `high` |
 | Hefesto | Obreros (×N) | `deepseek-flash` | `high` |
@@ -40,47 +40,43 @@ Todos los precios son por 1M de tokens.
 | Alétheia / Argos / Cerbero / Plutus / Ariadna | Herramientas | — (sin LLM) | — |
 
 **Roles LLM totales: exactamente 5** (planificar, spec, tests, construir×N, inspeccionar). Todo lo demás
-es herramienta determinística que no se puede engañar. Solo **Prometeo** corre un modelo premium, una
-llamada por unidad.
+es herramienta determinística que no se puede engañar.
 
-## El planificador premium — decisión (18-sep-2026, aprobada por el operador)
+## El modelo del planificador — decisión vigente y el experimento planificado
 
-La idea: un modelo **mucho mejor solo para planificar**, `deepseek-flash` en los obreros, e
-instrucciones claras del planificador para que los obreros no reinterpretan.
-
-**Decisión**: Prometeo corre **`anthropic/claude-opus-5`** (Anthropic) **vía OpenRouter**.
+Decisión (18-sep-2026): **Prometeo planifica con `deepseek-flash` + `thinking` + `reasoning_effort=max`**
+por ahora. La opción premium se evaluó y quedó como *experimento medido*:
 
 | Aspecto | Valor (verificado 18-sep-2026) |
 |---|---|
-| Modelo | `anthropic/claude-opus-5` (contexto de 1M) |
-| Ruta | **OpenRouter** (la key `OPENROUTER_API_KEY` ya existe) — Anthropic directo tiene el mismo precio de lista y pide key/cuenta nueva; ambas valen, OpenRouter es el default sin fricción |
+| Candidato | `anthropic/claude-opus-5` (contexto 1M), vía OpenRouter (la key `OPENROUTER_API_KEY` ya existe; Anthropic directo = mismo precio de lista y pide key/cuenta nueva) |
 | Precio (OpenRouter) | $5.00 / 1M input · $25.00 / 1M output · variante `:batch` a mitad ($2.50 / $12.50) |
-| Costo por plan (est. 10k in / 2k out) | ≈ $0.05 + $0.05 = **≈ $0.10** (≈ $0.05 con `:batch`) |
-| Impacto diario (5–10 unidades/día) | **+$0.50 – $1.00** sobre un pipeline todo-flash |
+| Costo por plan si se adopta (est. 10k in / 2k out) | ≈ $0.10 (≈ $0.05 con `:batch`) — impacto ≈ +$0.50–1.00/día |
 
-Por qué es seguro:
-- Prometeo es **una llamada por unidad** — el costo premium no se multiplica entre iteraciones (el
-  loop de revisión solo re-corre Hefesto + Minos, ambos flash).
-- El plan son **instrucciones ejecutables** para los obreros flash (desglose de dominio, criterios de
-  aceptación, archivos exactos, comportamientos prohibidos): el premium se paga una vez y los obreros
-  baratos ejecutan.
-- Fallback: `deepseek-flash` con `reasoning_effort=max` si la ruta de OpenRouter cae o el presupuesto se
-  excede; el pipeline degrada, nunca se detiene.
-- Si/ cuando salga **DeepSeek V4.1-Pro**, reevaluarlo para el mismo rol como opción más barata dentro del proveedor.
+Por qué DeepSeek primero: ningún modelo premium es *necesario* para que el pipeline funcione — flash con
+razonamiento máximo es la base medida; el premium solo tiene sentido si reduce el retrabajo aguas abajo.
+
+**Protocolo A/B (cuando se corra)**: las mismas 3 unidades se planifican con ambos modelos (flash-max vs
+opus-5). Comparar por unidad: completitud de la spec, score del inspector al primer pase, vueltas hasta
+5/5, tokens de retrabajo. Costo del experimento: 3 unidades × ≈$0.10 = ≈$0.30. El resultado decide el
+default; el pipeline nunca bloquea por eso. Reevaluar **DeepSeek V4.1-Pro** como premium dentro del
+proveedor cuando salga.
 
 ## Costo estimado por unidad (off-peak, con caché)
 
 | Rol | Tokens in (est.) | Tokens out (est.) | Costo (est.) |
 |---|---|---|---|
-| Prometeo (plan, Opus 5) | 10k | 2k | ≈ $0.10 |
+| Prometeo (plan, flash max) | 10k | 2k | ≈ $0.003 |
 | Pythia (spec) | 8k | 1.5k | ≈ $0.002 |
 | Themis (tests) | 10k | 1.5k | ≈ $0.002 |
 | Hefesto (build, 1 iteración) | 40k | 8k | ≈ $0.011 |
 | Minos (inspección, 1 vuelta) | 50k | 4k | ≈ $0.010 |
-| **Total por unidad, 1 build + 2 vueltas de revisión** | — | — | **≈ $0.14–0.16** (~$0.09–0.11 con Opus `:batch`) |
+| **Total por unidad, 1 build + 2 vueltas de revisión** | — | — | **≈ $0.04–0.06** |
+
+*Si el experimento A/B de Prometeo adopta `claude-opus-5`, sumar ≈ $0.10 por unidad (≈ $0.05 con `:batch`).*
 
 Un día completo de trabajo (10–20 unidades, 10–40k tokens por llamada, off-peak, con caché):
-**≈ $1.00–2.50** — el día todo-flash era ~$0.50–1.50; el planificador premium suma el costo de Opus.
+**≈ $0.50–1.50**.
 
 ## Mecánica de presupuesto (Plutus)
 

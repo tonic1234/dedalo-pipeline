@@ -9,7 +9,7 @@ mental anchor: you instantly know what Minos does because Minos is the judge.
 | Entity | Myth | Meaning for the role | Pipeline role | Model (default) | Artifact |
 |---|---|---|---|---|---|
 | **Dédalo** | Daedalus, master craftsman of Crete, builder of the Labyrinth | The one who designs and builds the whole factory | The pipeline itself | — | docs, schemas, code |
-| **Prometeo** | Prometheus "the Forethinker", who planned before acting and gave humanity the arts | Thinks ahead, plans the work before anyone touches code, and leaves clear instructions for every other stage | **Planner** | `claude-opus-5` (Anthropic via OpenRouter) | plan: unit breakdown, effort, budget estimate |
+| **Prometeo** | Prometheus "the Forethinker", who planned before acting and gave humanity the arts | Thinks ahead, plans the work before anyone touches code, and leaves clear instructions for every other stage | **Planner** | `deepseek-flash` + `thinking` + `reasoning_effort=max` *(A/B: `claude-opus-5` via OpenRouter pending)* | plan: unit breakdown, effort, budget estimate |
 | **Pythia** | The Oracle of Delphi, whose prophecies declare what must happen | Declares the spec: the prophecy the factory must fulfill | **Spec writer** | `deepseek-flash` | `spec.md` |
 | **Themis** | Goddess of divine law and order | The tests are the law: nothing ships until the law is satisfied | **Test writer (RED)** | `deepseek-flash` | failing tests + raw output |
 | **Hefesto** | Hephaestus, blacksmith of the gods, forged in isolation in his forge | The workers who build, each at his own anvil (worktree) | **Builder** (×N parallel) | `deepseek-flash` | code in `agent/<unit>` branch, tests green |
@@ -30,13 +30,15 @@ mental anchor: you instantly know what Minos does because Minos is the judge.
 
 ## Per-entity contract detail
 
-### Prometeo (Planner) — the only premium-reasoning role
+### Prometeo (Planner)
 - Inputs: the goal, the current codebase map, budget, active constraints.
 - Outputs: ordered unit breakdown, effort estimate per unit, risk notes, proposed model per role —
   and, above all, **instructions clear enough that deepseek-flash workers can execute them without
   re-interpreting**: explicit acceptance criteria, exact files, forbidden behaviors.
-- Model: `claude-opus-5` (Anthropic, via OpenRouter — the key already exists). Fallback:
-  `deepseek-flash` with `reasoning_effort=max` if the premium route is unavailable or over budget.
+- Model (current decision, 18-sep-2026): `deepseek-flash` with `thinking` + `reasoning_effort=max`.
+  Planned experiment: A/B the same units against `claude-opus-5` (Anthropic, via OpenRouter — the key
+  already exists) to measure whether the premium planner pays for itself; the pipeline never blocks on
+  that decision.
 - The plan is a **proposal**: Pythia turns it into a spec, and Themis can falsify it.
 
 ### Pythia (Spec)

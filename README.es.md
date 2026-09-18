@@ -17,7 +17,7 @@ inspirado en la software factory de Ras Mic (michaelshimeles/skills) y el podcas
 ```mermaid
 flowchart LR
     Z[("Zeus — humano<br/>solo merge")]
-    PRO["Prometeo — PLANIFICADOR<br/>claude-opus-5 (OpenRouter)"]
+    PRO["Prometeo — PLANIFICADOR<br/>deepseek-flash, razonamiento máx"]
     PYT["Pythia — SPEC"]
     THE["Themis — TESTS (en ROJO)"]
     HEF["Hefesto — OBREROS ×N<br/>deepseek-flash, worktrees"]
@@ -44,7 +44,7 @@ así los mismos identificadores sirven para la doc en español e inglés.
 | Entidad | Mito | Rol en Dédalo | Modelo (por defecto) |
 |---|---|---|---|
 | Dédalo (Daedalus) | El artesano maestro de Creta | El pipeline mismo | — |
-| Prometeo | El que piensa antes de actuar | **Planificador** — el único rol premium, escribe instrucciones claras para todas las demás etapas | `claude-opus-5` (Anthropic vía OpenRouter) |
+| Prometeo | El que piensa antes de actuar | **Planificador** — escribe instrucciones claras para todas las demás etapas | `deepseek-flash`, `thinking` + `reasoning_effort=max` *(A/B con `claude-opus-5` pendiente)* |
 | Pythia | El Oráculo de Delfos | Escribe la **spec** (la profecía a cumplir) | `deepseek-flash` |
 | Themis | Diosa de la ley divina | **Tests**: escribe los tests que fallan (la ley) | `deepseek-flash` |
 | Hefesto | Herrero de los dioses | **Obreros** — implementan en worktrees aislados | `deepseek-flash` |

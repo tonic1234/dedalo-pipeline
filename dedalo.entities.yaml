@@ -13,10 +13,9 @@ entities:
     role: "Planner: unit breakdown, effort, budget estimate, executable instructions for the workers"
     kind: stage
     llm: true
-    model: anthropic/claude-opus-5
-    route: openrouter
-    model_fallback: deepseek-flash
-    reasoning: "premium (fallback: max on flash)"
+    model: deepseek-flash
+    reasoning: "thinking + reasoning_effort=max (current)"
+    ab_experiment: {candidate_model: anthropic/claude-opus-5, route: openrouter, status: pending}
     artifact: plan.md
   - id: pythia
     myth: "The Oracle of Delphi"

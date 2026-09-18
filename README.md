@@ -17,7 +17,7 @@ inspired by Ras Mic's software factory (michaelshimeles/skills) and Greg Isenber
 ```mermaid
 flowchart LR
     Z[("Zeus — human<br/>merge only")]
-    PRO["Prometeo — PLANNER<br/>claude-opus-5 (OpenRouter)"]
+    PRO["Prometeo — PLANNER<br/>deepseek-flash, reasoning max"]
     PYT["Pythia — SPEC"]
     THE["Themis — TESTS (RED)"]
     HEF["Hefesto — BUILDERS ×N<br/>deepseek-flash, worktrees"]
@@ -44,7 +44,7 @@ so the same identifiers work in English and Spanish docs.
 | Entity | Myth | Role in Dédalo | Model (default) |
 |---|---|---|---|
 | Dédalo (Daedalus) | The master craftsman of Crete | The pipeline itself | — |
-| Prometeo | The Forethinker (who plans before acting) | **Planner** — the only premium-reasoning role, writes clear instructions for every other stage | `claude-opus-5` (Anthropic via OpenRouter) |
+| Prometeo | The Forethinker (who plans before acting) | **Planner** — writes clear instructions for every other stage | `deepseek-flash`, `thinking` + `reasoning_effort=max` *(A/B with `claude-opus-5` pending)* |
 | Pythia | The Oracle of Delphi | Writes the **spec** (the prophecy to fulfill) | `deepseek-flash` |
 | Themis | Goddess of divine law | **Tests**: writes failing tests (the law) | `deepseek-flash` |
 | Hefesto (Hephaestus) | Blacksmith of the gods | **Builders** — implement in isolated worktrees | `deepseek-flash` |

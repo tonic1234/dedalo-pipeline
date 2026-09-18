@@ -9,7 +9,7 @@ cada componente gana un anclaje mental: sabés al instante qué hace Minos porqu
 | Entidad | Mito | Qué significa para el rol | Rol en el pipeline | Modelo (por defecto) | Artefacto |
 |---|---|---|---|---|---|
 | **Dédalo** | Daedalus, artesano maestro de Creta, constructor del Laberinto | El que diseña y construye toda la fábrica | El pipeline mismo | — | docs, esquemas, código |
-| **Prometeo** | Prometheus "el que piensa antes", que planeó antes de actuar y dio las artes a la humanidad | Piensa adelante: planifica el trabajo antes de que nadie toque código, y deja instrucciones claras para todas las demás etapas | **Planificador** | `claude-opus-5` (Anthropic vía OpenRouter) | plan: desglose de unidades, esfuerzo, presupuesto |
+| **Prometeo** | Prometheus "el que piensa antes", que planeó antes de actuar y dio las artes a la humanidad | Piensa adelante: planifica el trabajo antes de que nadie toque código, y deja instrucciones claras para todas las demás etapas | **Planificador** | `deepseek-flash` + `thinking` + `reasoning_effort=max` *(A/B: `claude-opus-5` vía OpenRouter pendiente)* | plan: desglose de unidades, esfuerzo, presupuesto |
 | **Pythia** | El Oráculo de Delfos, cuyas profecías declaran lo que debe pasar | Declara la spec: la profecía que la fábrica debe cumplir | **Escritora de la spec** | `deepseek-flash` | `spec.md` |
 | **Themis** | Diosa de la ley divina y el orden | Los tests son la ley: nada sale hasta satisfacerla | **Escritora de tests (RED)** | `deepseek-flash` | tests que fallan + salida cruda |
 | **Hefesto** | Hephaestus, herrero de los dioses, que forjaba aislado en su fragua | Los obreros que construyen, cada uno en su yunque (worktree) | **Constructor** (×N en paralelo) | `deepseek-flash` | código en rama `agent/<unidad>`, tests en verde |
@@ -30,14 +30,16 @@ cada componente gana un anclaje mental: sabés al instante qué hace Minos porqu
 
 ## Contrato por entidad
 
-### Prometeo (Planificador) — el único rol premium
+### Prometeo (Planificador)
 - Entradas: el objetivo, el mapa del código actual, el presupuesto, las restricciones activas.
 - Salidas: desglose ordenado en unidades, esfuerzo estimado por unidad, riesgos, modelo propuesto por
   rol — y sobre todo, **instrucciones lo bastante claras para que los obreros deepseek-flash las
   ejecuten sin reinterpretar**: criterios de aceptación explícitos, archivos exactos, comportamientos
   prohibidos.
-- Modelo: `claude-opus-5` (Anthropic, vía OpenRouter — la key ya existe). Fallback:
-  `deepseek-flash` con `reasoning_effort=max` si la ruta premium no está disponible o excede presupuesto.
+- Modelo (decisión vigente, 18-sep-2026): `deepseek-flash` con `thinking` + `reasoning_effort=max`.
+  Experimento planificado: A/B de las mismas unidades contra `claude-opus-5` (Anthropic, vía
+  OpenRouter — la key ya existe) para medir si el planificador premium se paga solo; el pipeline nunca
+  bloquea por esa decisión.
 - El plan es una **propuesta**: Pythia lo convierte en spec y Themis puede falsificarlo.
 
 ### Pythia (Spec)

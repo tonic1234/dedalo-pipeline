@@ -24,13 +24,12 @@ layers, cost model, schemas. Birth plan:
 - Full test suite T1–T5 in CI with `verify.sh` + secrets scan.
 - Everything documented inside the product (bilingual `<details>`), per standing convention.
 
-## v1.1 — premium planner (DECIDED 2026-09-18)
-**Prometeo runs `anthropic/claude-opus-5` via OpenRouter** (the key already exists — zero friction;
-direct Anthropic is the same list price if a key is added later). Exactly one premium call per unit:
-the planner writes **executable instructions** (breakdown, acceptance criteria, exact files, forbidden
-behaviors) for the deepseek-flash workers. Cost: ≈ $0.10/plan ($0.05 with `:batch`), +$0.50–1.00/day
-over all-flash. Fallback: flash `reasoning_effort=max` (degrades, never stops). Re-evaluate
-**DeepSeek V4.1-Pro** as a cheaper in-provider option when it ships.
+## v1.1 — planner experiment with Claude (conditional)
+**Current: Prometeo plans with `deepseek-flash` + `reasoning_effort=max`** (decision 18-sep-2026).
+Planned experiment: A/B the same 3 units against `anthropic/claude-opus-5` via OpenRouter (key exists,
+≈$0.30 total) — compare spec completeness, first-pass inspector score, rounds to 5/5, rework tokens.
+The result decides the default; the pipeline never blocks on it. Re-evaluate **DeepSeek V4.1-Pro** as a
+cheaper in-provider premium when it ships.
 
 ## Non-goals (declared)
 - **No auto-merge** — the human is the only authority allowed to merge, always.
