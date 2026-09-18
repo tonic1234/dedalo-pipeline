@@ -25,10 +25,14 @@ anti-alucinación, modelo de costos, esquemas. Plan de nacimiento:
 - Suite completa T1–T5 en CI con `verify.sh` + escaneo de secretos.
 - Todo documentado dentro del producto (`<details>` bilingüe), según la convención permanente.
 
-## v1.1 — planificador premium (condicional)
-- Si/ cuando salga **DeepSeek V4.1-Pro**: evaluarlo solo para Prometeo (una llamada por unidad, impacto
-  de costo marginal) con OK explícito antes de cualquier escalada paga.
-- Los proveedores premium alternativos (Claude/GPT) quedan como referencia documentada, nunca default.
+## v1.1 — planificador premium (DECIDIDO 18-sep-2026)
+**Prometeo corre `anthropic/claude-opus-5` vía OpenRouter** (la key ya existe — cero fricción; Anthropic
+directo tiene el mismo precio de lista si después se agrega una key). Exactamente una llamada premium por
+unidad: el planificador escribe **instrucciones ejecutables** (desglose, criterios de aceptación,
+archivos exactos, comportamientos prohibidos) para los obreros deepseek-flash. Costo: ≈ $0.10/plan
+($0.05 con `:batch`), +$0.50–1.00/día sobre todo-flash. Fallback: flash `reasoning_effort=max`
+(degrade, nunca se detiene). Reevaluar **DeepSeek V4.1-Pro** como opción más barata dentro del proveedor
+cuando salga.
 
 ## No-objetivos (declarados)
 - **Sin auto-merge** — el humano es la única autoridad que mergea, siempre.

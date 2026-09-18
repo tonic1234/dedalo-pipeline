@@ -10,11 +10,13 @@ entities:
     llm: false
   - id: prometeo
     myth: "Prometheus — the Forethinker"
-    role: "Planner: unit breakdown, effort, budget estimate"
+    role: "Planner: unit breakdown, effort, budget estimate, executable instructions for the workers"
     kind: stage
     llm: true
-    model: deepseek-flash
-    reasoning: max
+    model: anthropic/claude-opus-5
+    route: openrouter
+    model_fallback: deepseek-flash
+    reasoning: "premium (fallback: max on flash)"
     artifact: plan.md
   - id: pythia
     myth: "The Oracle of Delphi"
@@ -92,6 +94,10 @@ rules:
 
 models:
   default: deepseek-flash
+  premium:
+    model: anthropic/claude-opus-5
+    route: openrouter
+    pricing_per_1M: {input: 5.00, output: 25.00, batch_input: 2.50, batch_output: 12.50}
   pricing_offpeak_per_1M: {input_cache_hit: 0.003, input_cache_miss: 0.15, output: 0.60}
   pricing_peak_per_1M: {input_cache_hit: 0.006, input_cache_miss: 0.30, output: 1.20}
   retired:
